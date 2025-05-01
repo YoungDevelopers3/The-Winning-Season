@@ -2,26 +2,84 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>📈 Yearly Study Progress Tracker</title>
+    <title>👑 Boss Lady Yearly Tracker</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Segoe UI", sans-serif;
         margin: 0;
         padding: 20px;
-        background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-        color: #333;
+        background: linear-gradient(135deg, #2c003e, #1c1c1c);
+        color: #f5e1f5;
       }
 
       h2 {
         text-align: center;
-        color: #fff;
+        color: #f5a3b7;
         text-shadow: 1px 1px 3px #000;
+        font-size: 2em;
+        margin-bottom: 10px;
       }
 
-      p {
+      #headerImage {
+        display: block;
+        margin: 0 auto;
+        max-width: 250px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      #quote {
         text-align: center;
-        color: #f0f0f0;
-        font-weight: 500;
+        margin-top: 20px;
+        font-size: 1.2em;
+        font-style: italic;
+        color: #e0b0ff;
+        padding: 10px 20px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+      }
+
+      /* Typing cursor effect */
+      #quote::after {
+        content: "";
+        display: inline-block;
+        width: 2px;
+        height: 1.2em;
+        background-color: #e0b0ff;
+        margin-left: 5px;
+        animation: blink 1s steps(2, start) infinite;
+        position: absolute;
+      }
+
+      @keyframes blink {
+        to {
+          visibility: hidden;
+        }
+      }
+
+      #progressBarContainer {
+        width: 80%;
+        background-color: #444;
+        margin: 20px auto;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      #progressBar {
+        height: 20px;
+        background: linear-gradient(90deg, #ff8aa5, #ffc0cb);
+        width: 0%;
+        transition: width 0.5s ease;
+      }
+
+      #streak,
+      #achievement {
+        text-align: center;
+        margin: 10px 0;
+        font-size: 1.1em;
+        color: #f5a3b7;
       }
 
       .controls {
@@ -34,15 +92,15 @@
         font-size: 16px;
         border: none;
         border-radius: 5px;
-        background-color: #ffffff;
-        color: #333;
+        background-color: #4b006e;
+        color: #f5e1f5;
         cursor: pointer;
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
       }
 
       button:hover {
-        background-color: #4ade80;
+        background-color: #ff69b4;
         color: white;
       }
 
@@ -60,46 +118,161 @@
         border-radius: 4px;
         cursor: pointer;
         transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        border: 1px solid #555;
+        background-color: #444;
+        position: relative;
       }
 
       .cell:hover {
         transform: scale(1.2);
-        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
       }
 
-      .no-effort {
-        background-color: #f87171;
-      } /* Red */
       .strong-effort {
-        background-color: #4ade80;
-      } /* Green */
+        background-color: #ff69b4;
+      }
+
+      .note-indicator {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 6px;
+        height: 6px;
+        background-color: #ffe066;
+        border-radius: 50%;
+      }
     </style>
   </head>
   <body>
-    <h1>
-      If they say you CAN'T and they IGNORE you,In SILENCE go so FAR AHEAD of
-      them that they FALL SILENT when they see YOU WIN
-    </h1>
-    <h2>📅 2025 Study Year Tracker</h2>
-    <p>Click each day to toggle between No Effort 🔴 and Strong Effort 🟢</p>
+    <h2>👑 Boss Lady Yearly Tracker</h2>
+
+    <div id="quote">Loading your daily motivation...</div>
+
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+    <div id="streak">Current streak: 0 days 🔥</div>
+    <div id="achievement">Achievement: Keep going, Boss Lady! 💪</div>
+
+    <p style="text-align: center; color: #e0b0ff">
+      Click a day to toggle: No Effort 🔲 → Strong Effort 🟣. Click again to add
+      a note 📝.
+    </p>
+
     <div class="controls">
       <button onclick="resetGrid()">🔄 Reset All</button>
     </div>
     <div class="grid" id="grid"></div>
 
+    <!-- Popup for journaling -->
+    <div
+      id="popup"
+      style="
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2c003e;
+        padding: 20px;
+        border: 2px solid #ff69b4;
+        border-radius: 10px;
+        z-index: 1000;
+        max-width: 90%;
+      "
+    >
+      <h3 style="margin-top: 0; color: #f5a3b7">
+        Add Note for Day <span id="popupDay"></span>
+      </h3>
+      <textarea id="noteText" rows="4" style="width: 100%"></textarea>
+      <div style="text-align: right; margin-top: 10px">
+        <button onclick="saveNote()">💾 Save</button>
+        <button onclick="closePopup()">❌ Cancel</button>
+      </div>
+    </div>
+
     <script>
       const daysInYear = 365;
       const states = ["no-effort", "strong-effort"];
       const grid = document.getElementById("grid");
+      const progressBar = document.getElementById("progressBar");
+      const streakDisplay = document.getElementById("streak");
+      const achievementDisplay = document.getElementById("achievement");
+      const popup = document.getElementById("popup");
+      const popupDay = document.getElementById("popupDay");
+      const noteText = document.getElementById("noteText");
 
-      // Load from LocalStorage or initialize
+      let currentDayIndex = null;
+
+      const quotes = [
+        "She remembered who she was and the game changed.",
+        "Be the kind of woman that makes others step up their game.",
+        "Dream big. Work hard. Stay focused.",
+        "Your vibe attracts your tribe. Keep it bossy.",
+        "Success is not for the lazy. Let’s get it.",
+        "Behind every successful woman is herself.",
+        "Progress, not perfection. Keep climbing.",
+        "The future is female. Make it powerful.",
+        "You were born to lead, not to follow.",
+        "Boss up and change your life.",
+        "Hustle until your haters ask if you’re hiring.",
+        "Stay strong. Make them wonder how you’re still smiling.",
+        "Every day is a fresh start. Make it count.",
+        "Consistency is queen. Rule your year.",
+      ];
+
       let progress =
-        JSON.parse(localStorage.getItem("studyProgress")) ||
+        JSON.parse(localStorage.getItem("bossLadyProgress")) ||
         Array(daysInYear).fill("no-effort");
+      let notes = JSON.parse(localStorage.getItem("bossLadyNotes")) || {};
 
       function saveProgress() {
-        localStorage.setItem("studyProgress", JSON.stringify(progress));
+        localStorage.setItem("bossLadyProgress", JSON.stringify(progress));
+      }
+
+      function saveNotes() {
+        localStorage.setItem("bossLadyNotes", JSON.stringify(notes));
+      }
+
+      function getDailyQuote() {
+        const today = new Date();
+        const dayOfYear = Math.floor(
+          (today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24)
+        );
+        return quotes[dayOfYear % quotes.length];
+      }
+
+      function calculateStreak() {
+        let streak = 0;
+        for (let i = daysInYear - 1; i >= 0; i--) {
+          if (progress[i] === "strong-effort") {
+            streak++;
+          } else {
+            break;
+          }
+        }
+        return streak;
+      }
+
+      function updateProgress() {
+        const completed = progress.filter(
+          (state) => state === "strong-effort"
+        ).length;
+        const percentage = Math.round((completed / daysInYear) * 100);
+        progressBar.style.width = percentage + "%";
+
+        const streak = calculateStreak();
+        streakDisplay.textContent = `Current streak: ${streak} day${
+          streak === 1 ? "" : "s"
+        } 🔥`;
+
+        // Milestones
+        let achievement = "Keep going, Boss Lady! 💪";
+        if (streak >= 7) achievement = "🎉 7-Day Streak: You’re unstoppable!";
+        if (streak >= 30) achievement = "🏆 30-Day Streak: True boss status!";
+        if (streak >= 100) achievement = "👑 100-Day Streak: Legendary!";
+        achievementDisplay.textContent = `Achievement: ${achievement}`;
       }
 
       function createGrid() {
@@ -107,23 +280,28 @@
         for (let i = 0; i < daysInYear; i++) {
           const cell = document.createElement("div");
           cell.classList.add("cell", progress[i]);
-          cell.title = `Day ${i + 1}: ${
-            progress[i] === "strong-effort" ? "Strong Effort" : "No Effort"
-          }`;
+          cell.title = `Day ${i + 1}`;
 
-          // Toggle state on click
+          if (notes[i]) {
+            const noteIndicator = document.createElement("div");
+            noteIndicator.classList.add("note-indicator");
+            cell.appendChild(noteIndicator);
+            cell.title += ` (Note added)`;
+          }
+
           cell.addEventListener("click", () => {
-            let nextState =
-              progress[i] === "no-effort" ? "strong-effort" : "no-effort";
-            progress[i] = nextState;
-
-            // Update cell visuals
-            cell.className = "cell " + nextState;
-            cell.title = `Day ${i + 1}: ${
-              nextState === "strong-effort" ? "Strong Effort" : "No Effort"
-            }`;
-
+            if (progress[i] === "no-effort") {
+              progress[i] = "strong-effort";
+            } else {
+              currentDayIndex = i;
+              noteText.value = notes[i] || "";
+              popupDay.textContent = i + 1;
+              popup.style.display = "block";
+              return;
+            }
             saveProgress();
+            updateProgress();
+            createGrid();
           });
 
           grid.appendChild(cell);
@@ -133,12 +311,33 @@
       function resetGrid() {
         if (confirm("Are you sure you want to reset all progress?")) {
           progress = Array(daysInYear).fill("no-effort");
+          notes = {};
           saveProgress();
+          saveNotes();
+          updateProgress();
           createGrid();
         }
       }
 
-      // Initialize grid
+      function saveNote() {
+        const text = noteText.value.trim();
+        if (text) {
+          notes[currentDayIndex] = text;
+        } else {
+          delete notes[currentDayIndex];
+        }
+        saveNotes();
+        closePopup();
+        createGrid();
+      }
+
+      function closePopup() {
+        popup.style.display = "none";
+      }
+
+      // Initialize
+      document.getElementById("quote").textContent = getDailyQuote();
+      updateProgress();
       createGrid();
     </script>
   </body>
