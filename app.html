@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>📈 Yearly Study Progress Tracker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+        color: #333;
+      }
+
+      h2 {
+        text-align: center;
+        color: #fff;
+        text-shadow: 1px 1px 3px #000;
+      }
+
+      p {
+        text-align: center;
+        color: #f0f0f0;
+        font-weight: 500;
+      }
+
+      .controls {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #ffffff;
+        color: #333;
+        cursor: pointer;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #4ade80;
+        color: white;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(30, 22px);
+        grid-gap: 5px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .cell {
+        width: 22px;
+        height: 22px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .cell:hover {
+        transform: scale(1.2);
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      .no-effort {
+        background-color: #f87171;
+      } /* Red */
+      .strong-effort {
+        background-color: #4ade80;
+      } /* Green */
+    </style>
+  </head>
+  <body>
+    <h1>
+      If they say you CAN'T and they IGNORE you,In SILENCE go so FAR AHEAD of
+      them that they FALL SILENT when they see YOU WIN
+    </h1>
+    <h2>📅 2025 Study Year Tracker</h2>
+    <p>Click each day to toggle between No Effort 🔴 and Strong Effort 🟢</p>
+    <div class="controls">
+      <button onclick="resetGrid()">🔄 Reset All</button>
+    </div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+      const daysInYear = 365;
+      const states = ["no-effort", "strong-effort"];
+      const grid = document.getElementById("grid");
+
+      // Load from LocalStorage or initialize
+      let progress =
+        JSON.parse(localStorage.getItem("studyProgress")) ||
+        Array(daysInYear).fill("no-effort");
+
+      function saveProgress() {
+        localStorage.setItem("studyProgress", JSON.stringify(progress));
+      }
+
+      function createGrid() {
+        grid.innerHTML = "";
+        for (let i = 0; i < daysInYear; i++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell", progress[i]);
+          cell.title = `Day ${i + 1}: ${
+            progress[i] === "strong-effort" ? "Strong Effort" : "No Effort"
+          }`;
+
+          // Toggle state on click
+          cell.addEventListener("click", () => {
+            let nextState =
+              progress[i] === "no-effort" ? "strong-effort" : "no-effort";
+            progress[i] = nextState;
+
+            // Update cell visuals
+            cell.className = "cell " + nextState;
+            cell.title = `Day ${i + 1}: ${
+              nextState === "strong-effort" ? "Strong Effort" : "No Effort"
+            }`;
+
+            saveProgress();
+          });
+
+          grid.appendChild(cell);
+        }
+      }
+
+      function resetGrid() {
+        if (confirm("Are you sure you want to reset all progress?")) {
+          progress = Array(daysInYear).fill("no-effort");
+          saveProgress();
+          createGrid();
+        }
+      }
+
+      // Initialize grid
+      createGrid();
+    </script>
+  </body>
+</html>
